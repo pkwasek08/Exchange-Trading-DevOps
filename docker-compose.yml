@@ -1,0 +1,59 @@
+version: "3.7"
+services:
+  dbpostgresql:
+    image: postgres:11-alpine
+    container_name: dbpostgresql
+    volumes:
+      - db-java-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=exchange
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - 5432:5432
+
+  dbtester:
+    image: postgres:11-alpine
+    container_name: dbtester
+    volumes:
+      - db-java-data-tester:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=tester
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - 5433:5432
+
+  et-app:
+    image: pkwasek/et-angular-app:5.5
+    container_name: et-app-angular
+    ports:
+      - 4200:80
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+    ports:
+      - 3000:3000
+
+  et-api:
+    image: pkwasek/et-api:5.3
+    container_name: et-api
+    depends_on:
+      - dbpostgresql
+    ports:
+      - 8080:8080
+
+  et-tester:
+    image: pkwasek/et-tester:1.2
+    container_name: et-tester
+    depends_on:
+      - dbtester
+    ports:
+      - 8081:8080
+      
+volumes:
+  db-java-data:
+  db-java-data-tester:
